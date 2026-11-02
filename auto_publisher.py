@@ -189,7 +189,12 @@ def publish_all(landscape_file: str, shorts_file: str, story: dict, ignore_sleep
         return
 
     title = story.get("title", "Breaking News Alert")
-    desc = f"{story.get('title')}\n\nQuestion of the Day: {story.get('question')}\n\nFootage licensed under Fair Use for educational news reporting."
+    desc = (
+        f"{story.get('title')}\n\n"
+        f"Question of the Day: {story.get('question')}\n\n"
+        f"Subscribe for hourly verified global & US breaking news coverage.\n\n"
+        f"Visuals and motion B-roll provided by Pexels (https://www.pexels.com) and licensed media under Fair Use."
+    )
     tags = story.get("tags", ["News", "Breaking", "USA"])
 
     print("\n" + "="*50)
