@@ -1,0 +1,51 @@
+name: 24/7 Global Hourly News Automation
+
+on:
+  schedule:
+    # Runs at the top of every hour (24 times a day)
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allows one-click manual test run anytime
+
+jobs:
+  broadcast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install NPM & Remotion Packages
+        run: |
+          npm ci || npm install
+
+      - name: 🌐 Ensure Remotion Headless Chrome
+        run: |
+          npx remotion browser ensure
+
+      - name: 🚀 Run News Pipeline & Publish (YouTube & Dailymotion)
+        env:
+          DM_API_KEY: ${{ secrets.DM_API_KEY }}
+          DM_API_SECRET: ${{ secrets.DM_API_SECRET }}
+          DM_USERNAME: ${{ secrets.DM_USERNAME }}
+          DM_PASSWORD: ${{ secrets.DM_PASSWORD }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          python run_pipeline.py
