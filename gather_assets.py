@@ -39,9 +39,28 @@ async def generate_fast_voice(text: str, output_path: str):
     await communicate.save(output_path)
     return output_path
 
+def ensure_footage():
+    """Ensures at least one real B-roll video clip is present in public/."""
+    fp = os.path.join(PUBLIC_DIR, "footage_1.mp4")
+    if not os.path.exists(fp):
+        print("[*] Downloading default real B-roll footage...")
+        # Direct small public domain MP4
+        sample_video_url = "https://raw.githubusercontent.com/MiSaykat/global-news-bot/main/public/footage_1.mp4"
+        try:
+            r = requests.get(sample_video_url, timeout=30)
+            if r.status_code == 200:
+                with open(fp, "wb") as f:
+                    f.write(r.content)
+                print(f"[OK] Downloaded footage_1.mp4 ({len(r.content)} bytes)")
+        except Exception as e:
+            print(f"[!] Could not download video clip: {e}")
+
 def prepare_story_assets(story: dict):
     print("\n[*] Preparing Story Visuals & High-Speed Voiceover...")
     
+    # 0. Ensure real footage video exists
+    ensure_footage()
+
     # 1. Generate Voiceover
     full_narration = " ".join([s["caption"] for s in story["scenes"]])
     audio_path = os.path.join(PUBLIC_DIR, "voice.mp3")
