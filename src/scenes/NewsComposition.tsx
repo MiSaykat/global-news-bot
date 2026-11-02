@@ -30,9 +30,9 @@ export const NewsComposition: React.FC = () => {
       {/* LAYER 1: Background Mesh */}
       <BgMesh />
 
-      {/* LAYER 2: Media & Assets (Rapid cuts every ~120 frames = 4s) */}
+      {/* LAYER 2: Media & Assets (Rapid cuts every ~120-140 frames = 4s) - 100% REAL MOTION VIDEO */}
 
-      {/* CUT 1 (Frames 0 - 140): Real Video Footage of Data Center */}
+      {/* CUT 1 (Frames 0 - 140): Real B-Roll Footage 1 */}
       <Sequence from={0} durationInFrames={140}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
           <OffthreadVideo
@@ -52,16 +52,16 @@ export const NewsComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 2 (Frames 140 - 280): Nuclear Cooling Tower Still */}
+      {/* CUT 2 (Frames 140 - 280): Real B-Roll Footage 2 */}
       <Sequence from={140} durationInFrames={140}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_2.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_2.mp4")}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(0.70) contrast(1.2)",
+              filter: "brightness(0.70) contrast(1.18)",
               transform: `scale(${interpolate(frame - 140, [0, 140], [1.0, 1.14], {
                 easing: theme.ease.inOut,
                 extrapolateLeft: "clamp",
@@ -72,16 +72,16 @@ export const NewsComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 3 (Frames 280 - 420): Microprocessor Silicon */}
+      {/* CUT 3 (Frames 280 - 420): Real B-Roll Footage 3 */}
       <Sequence from={280} durationInFrames={140}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_4.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_3.mp4")}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(0.70) contrast(1.25)",
+              filter: "brightness(0.70) contrast(1.20)",
               transform: `scale(${interpolate(frame - 280, [0, 140], [1.14, 1.0], {
                 easing: theme.ease.inOut,
                 extrapolateLeft: "clamp",
@@ -92,16 +92,16 @@ export const NewsComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 4 (Frames 420 - 560): White House / US Big Tech Deals */}
+      {/* CUT 4 (Frames 420 - 560): Real B-Roll Footage 4 */}
       <Sequence from={420} durationInFrames={140}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_3.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_4.mp4")}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(0.70) contrast(1.2)",
+              filter: "brightness(0.70) contrast(1.15)",
               transform: `scale(${interpolate(frame - 420, [0, 140], [1.0, 1.12], {
                 easing: theme.ease.inOut,
                 extrapolateLeft: "clamp",
@@ -112,16 +112,16 @@ export const NewsComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 5 (Frames 560 - 720): Electricity Blackout / Grid */}
+      {/* CUT 5 (Frames 560 - 720): Real B-Roll Footage 5 */}
       <Sequence from={560} durationInFrames={160}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_1.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_5.mp4")}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(0.68) contrast(1.25)",
+              filter: "brightness(0.68) contrast(1.20)",
               transform: `scale(${interpolate(frame - 560, [0, 160], [1.0, 1.15], {
                 easing: theme.ease.inOut,
                 extrapolateLeft: "clamp",
@@ -132,16 +132,16 @@ export const NewsComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 6 (Frames 720 - 960): OUTRO FINAL SCENE */}
+      {/* CUT 6 (Frames 720 - 960): OUTRO FINAL SCENE (Cinematic Video Background) */}
       <Sequence from={720} durationInFrames={240}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_2.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_1.mp4")}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(0.40) blur(6px)",
+              filter: "brightness(0.35) blur(8px)",
             }}
           />
         </AbsoluteFill>
