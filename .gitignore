@@ -1,0 +1,7 @@
+node_modules/
+out/*.mp4
+out/*.png
+.env
+.remotion/
+*.pyc
+__pycache__/
