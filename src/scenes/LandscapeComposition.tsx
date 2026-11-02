@@ -29,9 +29,9 @@ export const LandscapeComposition: React.FC = () => {
       {/* LAYER 1: Background Mesh */}
       <BgMesh />
 
-      {/* LAYER 2: 16:9 Widescreen Media Visuals */}
+      {/* LAYER 2: 16:9 Widescreen Media Visuals - 100% REAL MOTION VIDEO */}
 
-      {/* CUT 1: Real Datacenter Video */}
+      {/* CUT 1: Real B-Roll Footage 1 */}
       <Sequence from={0} durationInFrames={180}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
           <OffthreadVideo
@@ -51,16 +51,16 @@ export const LandscapeComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 2: Nuclear Power Plant */}
+      {/* CUT 2: Real B-Roll Footage 2 */}
       <Sequence from={180} durationInFrames={180}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_2.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_2.mp4")}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(0.68) contrast(1.2)",
+              filter: "brightness(0.68) contrast(1.18)",
               transform: `scale(${interpolate(frame - 180, [0, 180], [1.0, 1.10], {
                 easing: theme.ease.inOut,
                 extrapolateLeft: "clamp",
@@ -71,16 +71,16 @@ export const LandscapeComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 3: Silicon Microprocessor */}
+      {/* CUT 3: Real B-Roll Footage 3 */}
       <Sequence from={360} durationInFrames={180}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_4.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_3.mp4")}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(0.68) contrast(1.2)",
+              filter: "brightness(0.68) contrast(1.20)",
               transform: `scale(${interpolate(frame - 360, [0, 180], [1.10, 1.0], {
                 easing: theme.ease.inOut,
                 extrapolateLeft: "clamp",
@@ -91,16 +91,16 @@ export const LandscapeComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 4: White House / Big Tech Deals */}
+      {/* CUT 4: Real B-Roll Footage 4 */}
       <Sequence from={540} durationInFrames={180}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_3.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_4.mp4")}
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(0.68) contrast(1.2)",
+              filter: "brightness(0.68) contrast(1.16)",
               transform: `scale(${interpolate(frame - 540, [0, 180], [1.0, 1.08], {
                 easing: theme.ease.inOut,
                 extrapolateLeft: "clamp",
@@ -111,11 +111,11 @@ export const LandscapeComposition: React.FC = () => {
         </AbsoluteFill>
       </Sequence>
 
-      {/* CUT 5: OUTRO BACKGROUND */}
+      {/* CUT 5: OUTRO BACKGROUND (Cinematic Video Background) */}
       <Sequence from={720} durationInFrames={240}>
         <AbsoluteFill style={{ overflow: "hidden" }}>
-          <Img
-            src={staticFile("cut_1.jpg")}
+          <OffthreadVideo
+            src={staticFile("footage_1.mp4")}
             style={{
               width: "100%",
               height: "100%",
