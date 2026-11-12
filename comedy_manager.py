@@ -3,9 +3,10 @@ Comedy Show Video Automation for Indian Prime Time & Peak Hours
 Fetches unposted videos in chronological order (from the very beginning/oldest to newest)
 from @RDCComedyShow and publishes 5 times daily at peak traffic hours to Dailymotion & YouTube.
 
-Custom Rule:
-- ONLY Title is generated and set by the bot.
-- Description and Tags are OMITTED entirely so that account-level defaults are preserved.
+Optimized with the user's most viral Dailymotion settings:
+- Title format: {clean_title} _ The Kapil Sharma Show 2026 _ New Hindi Comedy Episode
+- Viral Hashtag Description matching user's top-performing video
+- High-Traffic Viral Tags based on user's proven viral video formula
 """
 import os
 import sys
@@ -28,6 +29,24 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 
 HISTORY_FILE = os.path.join(DATA_DIR, "comedy_history.json")
 CHANNEL_URL = "https://www.youtube.com/@RDCComedyShow/videos"
+
+# Proven viral description from user's screenshot
+VIRAL_DESCRIPTION = (
+    "#reels #viral #explore #explorepage #instagram #trending #instadaily #viralvideos #reelsinstagram "
+    "#model #likes #beautiful #me #trendingreels #beauty #bollywood #goodvibes #art #instalike "
+    "#foryoupage #beauty #onlineshopping #liketime #snapchat #bbtaj #photoshoot #smile #cute #post "
+    "#comment #nature #instafashion #mumbai #fashionblogger #lifestyle #travel #funny #exploremore "
+    "#cold #fashionstyle #instanature #new #comedy #kapilsharma #kapilsharmashow"
+)
+
+# Proven viral tags from user's screenshot + targeted comedy keywords
+VIRAL_TAGS = [
+    "boxoffice", "movieclips", "movie", "clips", "box office", "movie clips", "movie scenes",
+    "boxoffice movie scenes", "animation", "movies", "best scenes", "action scenes", "movie trailers",
+    "full movie", "full movies", "free movie", "action movie", "movies 2024 full movie", "new movie",
+    "2024 movie", "full movie 2024", "comedy", "the kapil sharma show", "kapil sharma show",
+    "krushna abhishek", "funny deol", "garam ji", "laughter challenge", "viral", "trending", "comedy clips"
+]
 
 def load_history() -> set:
     if os.path.exists(HISTORY_FILE):
@@ -109,26 +128,22 @@ def download_video(video_info: dict) -> str:
         print(f"[!] Download failed: {res.stderr[:300]}")
         return None
 
-def clean_and_optimize_title(title: str) -> str:
-    """
-    Cleans raw title, removes unwanted unicode characters/glitches,
-    and formats an attractive, high-CTR headline.
-    """
+def format_viral_title(title: str) -> str:
+    """Formats title following the high-CTR viral pattern."""
     clean = re.sub(r'[\uFEFF\u200B-\u200D]', '', title)
     clean = re.sub(r'\s+', ' ', clean).strip()
     
-    # Ensure brand identity if not already mentioned
+    # Matching user's viral style: TITLE _ The Kapil Sharma Show 2026 _ New Hindi Comedy Episode
     if "kapil sharma" not in clean.lower():
-        optimized = f"{clean} | Kapil Sharma Show"
+        formatted = f"{clean} _ The Kapil Sharma Show 2026 _ New Hindi Comedy Episode"
     else:
-        optimized = clean
+        formatted = clean
 
-    return optimized[:255]
+    return formatted[:255]
 
-def upload_to_dailymotion_title_only(file_path: str, title: str):
+def upload_to_dailymotion(file_path: str, title: str, description: str, tags: list):
     """
-    Uploads video to Dailymotion specifying ONLY the Title.
-    Description and Tags are omitted completely so channel account defaults apply.
+    Uploads video to Dailymotion applying the user's proven viral title, description, and tags.
     """
     api_key = os.getenv("DM_API_KEY")
     api_secret = os.getenv("DM_API_SECRET")
@@ -176,10 +191,12 @@ def upload_to_dailymotion_title_only(file_path: str, title: str):
             print(f"[!] Dailymotion File Upload Failed: {file_res}")
             return False
 
-        # Step 4: Publish with ONLY Title (No Description, No Tags)
+        # Step 4: Publish with Viral Metadata
         payload = {
             "url": hosted_url,
             "title": title,
+            "description": description,
+            "tags": ",".join(tags),
             "channel": "fun",
             "published": "true"
         }
@@ -199,9 +216,9 @@ def upload_to_dailymotion_title_only(file_path: str, title: str):
         return False
 
 def process_next_comedy_video():
-    """Main runner: finds next unposted video in chronological order and publishes Title Only."""
+    """Main runner: finds next unposted video in chronological order and publishes with Viral Settings."""
     print("=" * 60)
-    print("😂 COMEDY SHOW (KAPIL SHARMA) AUTOMATION - TITLE ONLY MODE")
+    print("🔥 COMEDY SHOW AUTOMATION - VIRAL BOOST MODE")
     print(f"[*] Time (UTC): {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
 
@@ -227,19 +244,19 @@ def process_next_comedy_video():
         print("[!] Could not download video.")
         return False
 
-    title = clean_and_optimize_title(target["title"])
-    print(f"[*] Optimized Title: {title}")
-    print(f"[*] (Description & Tags omitted to preserve user account defaults)")
+    title = format_viral_title(target["title"])
+    print(f"[*] Viral Title: {title}")
+    print(f"[*] Applied Viral Hashtags & High-Volume Tags")
 
     print("\n[*] Publishing to Dailymotion...")
-    dm_ok = upload_to_dailymotion_title_only(video_path, title)
+    dm_ok = upload_to_dailymotion(video_path, title, VIRAL_DESCRIPTION, VIRAL_TAGS)
 
-    # Optional: If YouTube credentials exist, upload title only
+    # Optional YouTube
     yt_client_id = os.getenv("YOUTUBE_CLIENT_ID")
     if yt_client_id:
         try:
             from auto_publisher import upload_to_youtube
-            upload_to_youtube(video_path, title, description="", tags=[], is_short=False)
+            upload_to_youtube(video_path, title, VIRAL_DESCRIPTION, VIRAL_TAGS, is_short=False)
         except Exception as e:
             print(f"[*] YouTube optional upload skipped or failed: {e}")
 
