@@ -2,6 +2,10 @@
 Comedy Show Video Automation for Indian Prime Time & Peak Hours
 Fetches unposted videos in chronological order (from the very beginning/oldest to newest)
 from @RDCComedyShow and publishes 5 times daily at peak traffic hours to Dailymotion & YouTube.
+
+Custom Rule:
+- ONLY Title is generated and set by the bot.
+- Description and Tags are OMITTED entirely so that account-level defaults are preserved.
 """
 import os
 import sys
@@ -9,13 +13,12 @@ import json
 import subprocess
 import datetime
 import re
+import requests
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
-
-from auto_publisher import upload_to_dailymotion, upload_to_youtube
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -106,44 +109,99 @@ def download_video(video_info: dict) -> str:
         print(f"[!] Download failed: {res.stderr[:300]}")
         return None
 
-def optimize_metadata(title: str):
-    """Generates high-ranking SEO titles, descriptions, and trending comedy tags."""
-    clean_title = re.sub(r'[\uFEFF\u200B-\u200D]', '', title)
-    clean_title = re.sub(r'\s+', ' ', clean_title).strip()
+def clean_and_optimize_title(title: str) -> str:
+    """
+    Cleans raw title, removes unwanted unicode characters/glitches,
+    and formats an attractive, high-CTR headline.
+    """
+    clean = re.sub(r'[\uFEFF\u200B-\u200D]', '', title)
+    clean = re.sub(r'\s+', ' ', clean).strip()
     
-    # Ensure brand identity
-    if "kapil sharma" not in clean_title.lower():
-        optimized_title = f"{clean_title} | Kapil Sharma Comedy Show"
+    # Ensure brand identity if not already mentioned
+    if "kapil sharma" not in clean.lower():
+        optimized = f"{clean} | Kapil Sharma Show"
     else:
-        optimized_title = clean_title
+        optimized = clean
 
-    description = (
-        f"{optimized_title}\n\n"
-        f"Get ready for non-stop laughter and rib-tickling comedy moments from The Kapil Sharma Show!\n"
-        f"Featuring Krushna Abhishek, Kiku Sharda, Kapil Sharma, Bharti Singh, Chandu, and celebrity guests.\n\n"
-        f"Follow & Subscribe for daily high-energy comedy episodes!\n\n"
-        f"#TheKapilSharmaShow #KapilSharmaShow #KrushnaAbhishek #HindiComedy #FunnyDeol #TrendingComedy #ComedyTadka"
-    )
+    return optimized[:255]
 
-    tags = [
-        "KapilSharmaShow",
-        "TheKapilSharmaShow",
-        "KrushnaAbhishek",
-        "HindiComedy",
-        "FunnyDeol",
-        "GaramJi",
-        "KikuSharda",
-        "ComedyShow",
-        "LaughterChallenge",
-        "TrendingComedy"
-    ]
+def upload_to_dailymotion_title_only(file_path: str, title: str):
+    """
+    Uploads video to Dailymotion specifying ONLY the Title.
+    Description and Tags are omitted completely so channel account defaults apply.
+    """
+    api_key = os.getenv("DM_API_KEY")
+    api_secret = os.getenv("DM_API_SECRET")
+    username = os.getenv("DM_USERNAME")
+    password = os.getenv("DM_PASSWORD")
 
-    return optimized_title[:255], description, tags
+    if not all([api_key, api_secret, username, password]):
+        print("[!] Dailymotion credentials missing. Set DM_API_KEY, DM_API_SECRET, DM_USERNAME, DM_PASSWORD.")
+        return False
+
+    print(f"[*] Authenticating with Dailymotion API for: {title}...")
+    try:
+        # Step 1: OAuth2 Token
+        token_res = requests.post("https://api.dailymotion.com/oauth/token", data={
+            "grant_type": "password",
+            "client_id": api_key,
+            "client_secret": api_secret,
+            "username": username,
+            "password": password,
+            "scope": "manage_videos"
+        }, timeout=30).json()
+
+        access_token = token_res.get("access_token")
+        if not access_token:
+            print(f"[!] Dailymotion Auth Failed: {token_res}")
+            return False
+
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        # Step 2: Get Upload URL
+        upload_init = requests.get("https://api.dailymotion.com/file/upload", headers=headers, timeout=30).json()
+        upload_url = upload_init.get("upload_url")
+        if not upload_url:
+            print(f"[!] Failed to get upload URL: {upload_init}")
+            return False
+
+        # Step 3: Stream Video File
+        file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+        print(f"[*] Uploading video binary to Dailymotion ({file_size_mb:.1f} MB)...")
+        with open(file_path, "rb") as f:
+            file_res = requests.post(upload_url, files={"file": f}, timeout=600).json()
+            hosted_url = file_res.get("url")
+
+        if not hosted_url:
+            print(f"[!] Dailymotion File Upload Failed: {file_res}")
+            return False
+
+        # Step 4: Publish with ONLY Title (No Description, No Tags)
+        payload = {
+            "url": hosted_url,
+            "title": title,
+            "channel": "fun",
+            "published": "true"
+        }
+
+        publish_res = requests.post("https://api.dailymotion.com/me/videos", headers=headers, data=payload, timeout=30).json()
+
+        if "id" in publish_res:
+            dm_id = publish_res["id"]
+            print(f"[SUCCESS] Dailymotion Video Published: https://www.dailymotion.com/video/{dm_id}")
+            return True
+        else:
+            print(f"[!] Dailymotion Publish Failed: {publish_res}")
+            return False
+
+    except Exception as e:
+        print(f"[!] Dailymotion Exception: {e}")
+        return False
 
 def process_next_comedy_video():
-    """Main runner: finds next unposted video in chronological order and publishes."""
+    """Main runner: finds next unposted video in chronological order and publishes Title Only."""
     print("=" * 60)
-    print("😂 COMEDY SHOW (KAPIL SHARMA) INDIAN PEAK-HOUR AUTOMATION")
+    print("😂 COMEDY SHOW (KAPIL SHARMA) AUTOMATION - TITLE ONLY MODE")
     print(f"[*] Time (UTC): {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
 
@@ -169,11 +227,21 @@ def process_next_comedy_video():
         print("[!] Could not download video.")
         return False
 
-    title, description, tags = optimize_metadata(target["title"])
+    title = clean_and_optimize_title(target["title"])
+    print(f"[*] Optimized Title: {title}")
+    print(f"[*] (Description & Tags omitted to preserve user account defaults)")
 
-    print("\n[*] Publishing to Dailymotion & YouTube...")
-    dm_ok = upload_to_dailymotion(video_path, title, description, tags)
-    yt_ok = upload_to_youtube(video_path, title, description, tags, is_short=False)
+    print("\n[*] Publishing to Dailymotion...")
+    dm_ok = upload_to_dailymotion_title_only(video_path, title)
+
+    # Optional: If YouTube credentials exist, upload title only
+    yt_client_id = os.getenv("YOUTUBE_CLIENT_ID")
+    if yt_client_id:
+        try:
+            from auto_publisher import upload_to_youtube
+            upload_to_youtube(video_path, title, description="", tags=[], is_short=False)
+        except Exception as e:
+            print(f"[*] YouTube optional upload skipped or failed: {e}")
 
     # Save to history
     history.add(target["id"])
