@@ -1,0 +1,54 @@
+name: Indian Peak-Hour Comedy Show Publisher (5 Daily)
+
+on:
+  schedule:
+    # 03:30 UTC = 09:00 AM IST (সকাল ৯:০০)
+    # 08:00 UTC = 01:30 PM IST (দুপুর ১:৩০)
+    # 12:00 UTC = 05:30 PM IST (বিকাল ৫:৩০)
+    # 14:30 UTC = 08:00 PM IST (রাত ৮:০০)
+    # 16:15 UTC = 09:45 PM IST (রাত ৯:৪৫)
+    - cron: '30 3 * * *'
+    - cron: '0 8 * * *'
+    - cron: '0 12 * * *'
+    - cron: '30 14 * * *'
+    - cron: '15 16 * * *'
+  workflow_dispatch: # যখন খুশি ১-ক্লিকে টেস্ট রান করার সুবিধা
+
+jobs:
+  publish_comedy_video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 😂 Run Comedy Show Indian Peak Publisher
+        env:
+          DM_API_KEY: ${{ secrets.DM_API_KEY }}
+          DM_API_SECRET: ${{ secrets.DM_API_SECRET }}
+          DM_USERNAME: ${{ secrets.DM_USERNAME }}
+          DM_PASSWORD: ${{ secrets.DM_PASSWORD }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          python comedy_manager.py
+
+      - name: 📝 Commit & Push History Tracking
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/comedy_history.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update posted comedy show video history [skip ci]" && git push)
